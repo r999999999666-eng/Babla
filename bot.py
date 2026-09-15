@@ -486,8 +486,8 @@ def withdraw_get_id_text(msg):
 8. Отправить код в бота
 
 ━━━━━━━━━━━━━━━━━━━━
-🏙 Город: <b>Ош</b>
-📍 Касса: <b>Касса Ош - TezPay</b>
+🏙 Город: <b>Бишкек</b>
+📍 Касса: <b>Касса Бишкек - LMWPAY</b>
 🕐 24/7"""
     send_msg(msg.chat.id, instruction, reply_markup=back_menu())
     bot.register_next_step_handler(msg, withdraw_get_code)
