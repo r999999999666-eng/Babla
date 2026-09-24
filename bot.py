@@ -18,7 +18,7 @@ if not TOKEN or len(TOKEN) < 40:
     logger.error("ТОКЕН НЕ НАЙДЕН!")
     raise SystemExit("No token")
 
-MAIN_ADMIN = 8589364445
+MAIN_ADMIN = 8992968778
 SUPPORT = "@suppbotlmw"
 BOT_NAME = "Melbet Pay"
 MIN_DEPOSIT = 50
