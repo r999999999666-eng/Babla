@@ -18,7 +18,7 @@ if not TOKEN or len(TOKEN) < 40:
     logger.error("ТОКЕН НЕ НАЙДЕН!")
     raise SystemExit("No token")
 
-MAIN_ADMIN = 8957913298
+MAIN_ADMIN = 8992968778
 SUPPORT = "@DiamondPAY_HELP_bot"
 BOT_NAME = "DiamondPAY"
 MIN_DEPOSIT = 100
