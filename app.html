@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>DiamondPAY</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #0b1020);
+      --text: var(--tg-theme-text-color, #fff);
+      --hint: var(--tg-theme-hint-color, #9aa3b5);
+      --sec: var(--tg-theme-secondary-bg-color, #151b2e);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 16px 16px 40px;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .header { text-align: center; margin-bottom: 16px; }
+    .header h1 { font-size: 22px; font-weight: 800; }
+    .header p { color: var(--hint); font-size: 13px; margin-top: 6px; }
+    .card {
+      background: var(--sec); border-radius: 16px;
+      padding: 14px 16px; margin-bottom: 14px;
+    }
+    .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; }
+    .row b { font-weight: 700; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn {
+      border: none; border-radius: 14px; padding: 16px 12px;
+      font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; width: 100%;
+    }
+    .btn:active { opacity: 0.9; transform: scale(0.98); }
+    .btn-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+    .btn-gray { background: linear-gradient(135deg, #6b7280, #4b5563); }
+    .btn-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+    .btn-red { background: linear-gradient(135deg, #ef4444, #dc2626); }
+    .btn-full { grid-column: 1 / -1; }
+    .back, .linkish {
+      background: transparent; border: 1px solid var(--hint); color: var(--text);
+      border-radius: 12px; padding: 10px; width: 100%; margin-top: 10px; font-size: 14px;
+    }
+    input, textarea, select {
+      width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #334;
+      background: var(--bg); color: var(--text); font-size: 16px; margin: 8px 0 12px;
+    }
+    .hint { color: var(--hint); font-size: 13px; margin-bottom: 10px; line-height: 1.45; }
+    .title { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+    .pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+    .pay-grid a {
+      display: block; text-align: center; padding: 12px; border-radius: 12px;
+      background: var(--sec); color: var(--text); text-decoration: none; font-weight: 600; font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <!-- HOME -->
+  <div id="home" class="screen active">
+    <div class="header">
+      <h1>DiamondPAY</h1>
+      <p id="greet">Загрузка…</p>
+    </div>
+    <div class="card">
+      <div class="row"><span>Реф. баланс</span><b id="bal">—</b></div>
+      <div class="row"><span>Друзей</span><b id="friends">—</b></div>
+      <div class="row"><span>Мин. пополнение</span><b>100 KGS</b></div>
+    </div>
+    <div class="grid">
+      <button class="btn btn-blue" data-go="dep1">Пополнить</button>
+      <button class="btn btn-blue" data-go="wd1">Вывести</button>
+      <button class="btn btn-gray" data-go="support">Поддержка</button>
+      <button class="btn btn-gray" data-go="help">Инструкция</button>
+      <button class="btn btn-green btn-full" data-go="ref">Пригласить друга</button>
+      <button class="btn btn-red btn-full" data-go="admin" id="adminBtn" style="display:none">Admin</button>
+    </div>
+  </div>
+
+  <!-- DEPOSIT steps -->
+  <div id="dep1" class="screen">
+    <div class="title">Пополнение</div>
+    <p class="hint">Шаг 1/3 — выберите букмекера</p>
+    <button class="btn btn-blue" id="depPlat1x">1xBet</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-blue" id="depPlatMel">Melbet</button>
+    <button class="back" data-go="home">Назад</button>
+  </div>
+  <div id="dep2" class="screen">
+    <div class="title">Пополнение · <span id="depPlatLabel"></span></div>
+    <p class="hint">Шаг 2/3 — ID счёта</p>
+    <input id="depId" placeholder="Ваш ID" inputmode="numeric" />
+    <button class="btn btn-blue" id="depNextId">Далее</button>
+    <button class="back" data-go="dep1">Назад</button>
+  </div>
+  <div id="dep3" class="screen">
+    <div class="title">Сумма</div>
+    <p class="hint">Шаг 3/3 — от 100 до 500 000 KGS</p>
+    <input id="depAmount" placeholder="Сумма" inputmode="decimal" />
+    <button class="btn btn-blue" id="depNextAmount">К оплате</button>
+    <button class="back" data-go="dep2">Назад</button>
+  </div>
+  <div id="dep4" class="screen">
+    <div class="title">Оплата</div>
+    <div class="card">
+      <div class="row"><span>Счёт</span><b id="depSumId">—</b></div>
+      <div class="row"><span>К оплате</span><b id="depSumPay">—</b></div>
+    </div>
+    <p class="hint">Реквизиты 5 минут. Оплатите точную сумму, затем нажмите кнопку — бот попросит скрин чека.</p>
+    <div class="pay-grid" id="payBanks"></div>
+    <button class="btn btn-green" id="depPaid">Я оплатил — отправить чек</button>
+    <button class="back" data-go="home">Отмена</button>
+  </div>
+
+  <!-- WITHDRAW steps -->
+  <div id="wd1" class="screen">
+    <div class="title">Вывод</div>
+    <p class="hint">Шаг 1 — букмекер<br>Бишкек · DiamondPAY KG · MOBCASH/LMWPAY</p>
+    <button class="btn btn-blue" id="wdPlat1x">1xBet</button>
+    <div style="height:10px"></div>
+    <button class="btn btn-blue" id="wdPlatMel">Melbet</button>
+    <button class="back" data-go="home">Назад</button>
+  </div>
+  <div id="wd2" class="screen">
+    <div class="title">Вывод · <span id="wdPlatLabel"></span></div>
+    <p class="hint">ID счёта букмекера</p>
+    <input id="wdId" placeholder="ID счёта" />
+    <button class="btn btn-blue" id="wdNextId">Далее</button>
+    <button class="back" data-go="wd1">Назад</button>
+  </div>
+  <div id="wd3" class="screen">
+    <div class="title">Код вывода</div>
+    <p class="hint">Код из MOBCASH / LMWPAY после подтверждения вывода в приложении букмекера.</p>
+    <input id="wdCode" placeholder="Код" />
+    <button class="btn btn-green" id="wdSubmit">Отправить заявку</button>
+    <p class="hint" style="margin-top:10px">После отправки бот попросит фото QR кошелька (если нужно).</p>
+    <button class="back" data-go="wd2">Назад</button>
+  </div>
+
+  <!-- REF -->
+  <div id="ref" class="screen">
+    <div class="title">Рефералы</div>
+    <p class="hint">2.5% с пополнений. Вывод: QR · 1xBet · Melbet</p>
+    <div class="card">
+      <div class="row"><span>Баланс</span><b id="bal2">—</b></div>
+      <div class="row"><span>Друзей</span><b id="friends2">—</b></div>
+    </div>
+    <button class="btn btn-green" id="refOpen">Открыть рефералы в боте</button>
+    <button class="back" data-go="home">Назад</button>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="support" class="screen">
+    <div class="title">Поддержка</div>
+    <p class="hint">Оператор ответит в боте. Статусы: Новое → В работе → Закрыто</p>
+    <textarea id="supportMsg" rows="4" placeholder="Ваш вопрос..."></textarea>
+    <button class="btn btn-blue" id="sendSupport">Отправить оператору</button>
+    <button class="back" data-go="home">Назад</button>
+  </div>
+
+  <!-- HELP -->
+  <div id="help" class="screen">
+    <div class="title">Инструкция</div>
+    <p class="hint">
+      <b>Пополнение</b> — полностью в приложении: букмекер → ID → сумма → оплата → чек в боте.<br><br>
+      <b>Вывод</b> — в приложении: букмекер → ID → код; QR при необходимости в боте.<br><br>
+      <b>Рефка</b> — 2.5%, вывод на QR / 1xBet / Melbet.<br><br>
+      <b>Поддержка</b> — обращение оператору в этом боте.
+    </p>
+    <button class="back" data-go="home">Назад</button>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin" class="screen">
+    <div class="title">Admin</div>
+    <div id="adminLogin">
+      <p class="hint">Код доступа</p>
+      <input id="pin" type="password" inputmode="numeric" placeholder="Код" maxlength="8" />
+      <button class="btn btn-red" id="pinBtn">Войти</button>
+    </div>
+    <div id="adminPanel" style="display:none">
+      <div class="card">
+        <div class="row"><span>Пользователей</span><b id="stUsers">—</b></div>
+        <div class="row"><span>В очереди</span><b id="stPending">—</b></div>
+        <div class="row"><span>Объём</span><b id="stTotal">—</b></div>
+      </div>
+      <button class="btn btn-blue" id="adminOpen">Админка в боте</button>
+    </div>
+    <button class="back" data-go="home">Назад</button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready(); tg.expand();
+    const user = (tg.initDataUnsafe && tg.initDataUnsafe.user) || {};
+    const uid = user.id || 0;
+    const MAIN_ADMIN = 8992968778;
+    const MIN_DEP = 100, MAX_DEP = 500000;
+    // PAY_LINK подставьте свой или загрузите с /api/config
+    let PAY_LINK = "";
+
+    const state = { dep: {}, wd: {} };
+
+    document.getElementById("greet").textContent = "Привет, " + (user.first_name || "друг") + "!";
+    if (uid === MAIN_ADMIN) document.getElementById("adminBtn").style.display = "block";
+
+    function show(id) {
+      document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+    document.querySelectorAll("[data-go]").forEach(el => {
+      el.addEventListener("click", () => show(el.getAttribute("data-go")));
+    });
+
+    function send(payload) {
+      tg.sendData(JSON.stringify(payload));
+      try { tg.close(); } catch (e) {}
+    }
+
+    // config + stats
+    async function boot() {
+      try {
+        const c = await fetch("/api/config");
+        const cfg = await c.json();
+        if (cfg.pay_link) PAY_LINK = cfg.pay_link;
+      } catch (e) {}
+      try {
+        const r = await fetch("/api/me?id=" + uid);
+        const d = await r.json();
+        const bal = (d.bal != null ? d.bal : 0).toFixed(2) + " KGS";
+        document.getElementById("bal").textContent = bal;
+        document.getElementById("bal2").textContent = bal;
+        document.getElementById("friends").textContent = d.friends || 0;
+        document.getElementById("friends2").textContent = d.friends || 0;
+      } catch (e) {}
+    }
+    boot();
+
+    // DEPOSIT
+    function startDep(platform) {
+      state.dep = { platform };
+      document.getElementById("depPlatLabel").textContent = platform;
+      document.getElementById("depId").value = "";
+      show("dep2");
+    }
+    document.getElementById("depPlat1x").onclick = () => startDep("1xBet");
+    document.getElementById("depPlatMel").onclick = () => startDep("Melbet");
+    document.getElementById("depNextId").onclick = () => {
+      const id = document.getElementById("depId").value.trim();
+      if (!id) return tg.showAlert("Введите ID");
+      state.dep.account_id = id;
+      document.getElementById("depAmount").value = "";
+      show("dep3");
+    };
+    document.getElementById("depNextAmount").onclick = () => {
+      const raw = document.getElementById("depAmount").value.replace(",", ".");
+      const amount = parseFloat(raw);
+      if (!amount || amount < MIN_DEP || amount > MAX_DEP) {
+        return tg.showAlert("Сумма от " + MIN_DEP + " до " + MAX_DEP);
+      }
+      // копейки как в боте
+      const cents = Math.floor(10 + Math.random() * 90);
+      state.dep.amount = Math.round((amount + cents / 100) * 100) / 100;
+      document.getElementById("depSumId").textContent = state.dep.platform + " | " + state.dep.account_id;
+      document.getElementById("depSumPay").textContent = state.dep.amount.toFixed(2) + " KGS";
+      const box = document.getElementById("payBanks");
+      box.innerHTML = "";
+      const banks = ["Mbank", "O! Bank", "BakAI", "MegaPay", "DemirBank"];
+      banks.forEach(name => {
+        const a = document.createElement("a");
+        a.textContent = name;
+        a.href = PAY_LINK || "#";
+        a.target = "_blank";
+        box.appendChild(a);
+      });
+      show("dep4");
+    };
+    document.getElementById("depPaid").onclick = () => {
+      send({
+        action: "deposit_full",
+        platform: state.dep.platform,
+        account_id: state.dep.account_id,
+        amount: state.dep.amount
+      });
+    };
+
+    // WITHDRAW
+    function startWd(platform) {
+      state.wd = { platform };
+      document.getElementById("wdPlatLabel").textContent = platform;
+      document.getElementById("wdId").value = "";
+      show("wd2");
+    }
+    document.getElementById("wdPlat1x").onclick = () => startWd("1xBet");
+    document.getElementById("wdPlatMel").onclick = () => startWd("Melbet");
+    document.getElementById("wdNextId").onclick = () => {
+      const id = document.getElementById("wdId").value.trim();
+      if (!id) return tg.showAlert("Введите ID");
+      state.wd.account_id = id;
+      document.getElementById("wdCode").value = "";
+      show("wd3");
+    };
+    document.getElementById("wdSubmit").onclick = () => {
+      const code = document.getElementById("wdCode").value.trim();
+      if (!code) return tg.showAlert("Введите код");
+      send({
+        action: "withdraw_full",
+        platform: state.wd.platform,
+        account_id: state.wd.account_id,
+        code: code
+      });
+    };
+
+    document.getElementById("refOpen").onclick = () => send({ action: "ref" });
+    document.getElementById("sendSupport").onclick = () => {
+      const text = (document.getElementById("supportMsg").value || "").trim();
+      if (text.length < 2) return tg.showAlert("Напишите вопрос");
+      send({ action: "support_msg", message: text });
+    };
+    document.getElementById("adminOpen").onclick = () => send({ action: "admin" });
+
+    document.getElementById("pinBtn").onclick = async () => {
+      const pin = document.getElementById("pin").value.trim();
+      try {
+        const r = await fetch("/api/admin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: uid, pin })
+        });
+        const d = await r.json();
+        if (!d.ok) return tg.showAlert("Неверный код");
+        document.getElementById("adminLogin").style.display = "none";
+        document.getElementById("adminPanel").style.display = "block";
+        if (d.stats) {
+          document.getElementById("stUsers").textContent = d.stats.users;
+          document.getElementById("stPending").textContent = d.stats.pending;
+          document.getElementById("stTotal").textContent = (d.stats.total || 0).toFixed(2) + " KGS";
+        }
+      } catch (e) { tg.showAlert("Ошибка сети"); }
+    };
+  </script>
+</body>
+</html>
