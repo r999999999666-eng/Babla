@@ -1142,7 +1142,7 @@ def withdraw_get_id_text(msg):
     instruction = f"""📖 <b>Вывод · {platform}</b>
 
 1. Настройки → Вывести со счёта
-2. Способ: <b>MOBCASH / LMWPAY</b>
+2. Способ: <b>MOBCASH / </b>
 3. Укажите сумму
 4. Город: <b>Бишкек</b>
 5. Улица: <b>DiamondPAY KG</b>
